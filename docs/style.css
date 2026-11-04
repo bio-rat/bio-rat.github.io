@@ -41,10 +41,10 @@ label small { font-weight: 400; color: var(--muted); margin-left: .35rem; }
 .row { display: flex; align-items: center; gap: .6rem; }
 .row label { margin: 0; }
 .row.two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; align-items: start; }
-input[type=text], input[type=number], textarea, select {
+input[type=text], input[type=number], input[type=password], textarea, select {
   width: 100%; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit;
 }
-input[type=text], textarea { font-family: var(--mono); font-size: .88rem; }
+input[type=text], input[type=password], textarea { font-family: var(--mono); font-size: .88rem; }
 textarea { resize: vertical; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 fieldset { margin: 1rem 0 0; padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 8px; }
