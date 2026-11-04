@@ -83,13 +83,24 @@
           </div>
 
           <div class="actions">
-            <button type="submit" id="run" class="primary">Elucidate structure</button>
+            <button type="submit" id="run" class="primary"><span class="spin" aria-hidden="true"></span><span id="run-label">Elucidate structure</span></button>
           </div>
           <p class="privacy" id="privacy"></p>
         </form>
 
         <div class="out" aria-live="polite">
           <div id="status" class="status" hidden></div>
+          <div id="running" class="running" hidden role="status" aria-live="polite">
+            <div class="run-head">
+              <span class="ring" aria-hidden="true"></span>
+              <div><b id="run-title">Running ChefNMR2 on a GPU…</b><div id="run-sub" class="run-sub"></div></div>
+            </div>
+            <div class="indeterminate" aria-hidden="true"><i></i></div>
+            <ol class="skeletons" aria-hidden="true">
+              <li class="cand skel"><div class="pic"><div class="shimmer block"></div></div><div class="body"><div class="shimmer line w30"></div><div class="shimmer line w100"></div><div class="shimmer line w70"></div></div></li>
+              <li class="cand skel"><div class="pic"><div class="shimmer block"></div></div><div class="body"><div class="shimmer line w30"></div><div class="shimmer line w100"></div><div class="shimmer line w50"></div></div></li>
+            </ol>
+          </div>
           <div id="results" hidden>
             <div id="summary" class="summary"></div>
             <div id="hint" class="hint" hidden></div>
@@ -98,7 +109,11 @@
               <summary>Candidates set aside as chemically implausible</summary>
               <ul id="implausible"></ul>
             </details>
-            <p class="tools"><button type="button" id="dl" class="ghost">Download answer (JSON)</button></p>
+            <p class="tools">
+              <button type="button" id="dl-cdxml" class="ghost">Download for ChemDraw (.cdxml)</button>
+              <button type="button" id="dl-sdf" class="ghost">Download SDF</button>
+              <button type="button" id="dl" class="ghost">Download answer (JSON)</button>
+            </p>
           </div>
           <div id="placeholder" class="placeholder">Candidate structures appear here.</div>
         </div>
@@ -108,8 +123,9 @@
     <section id="about">
       <h2>About this page</h2>
       <p>A static page served by GitHub Pages. GitHub Pages cannot run a model or use a GPU, so the demo sends your input to
-         the ChefNMR2 authors' public GPU Space and draws the answer in your browser (structures are drawn locally with
-         <a href="https://github.com/rdkit/rdkit-js" rel="noopener">RDKit.js</a>).</p>
+         the ChefNMR2 authors' public GPU Space and draws the answer in your browser (2D structures are drawn locally with
+         <a href="https://github.com/rdkit/rdkit-js" rel="noopener">RDKit.js</a>; the ChemDraw export and the interactive 3D view are built in your browser with
+         <a href="https://github.com/cheminfo/openchemlib-js" rel="noopener">OpenChemLib</a> and <a href="https://3dmol.csb.pitt.edu/" rel="noopener">3Dmol.js</a>).</p>
       <p>ChefNMR2 code is MIT-licensed; its checkpoints are under CDLA-Sharing-1.0 and were trained on data that include
          NPAtlas and NP-MRD (CC BY-NC 4.0), so check those terms before any commercial use. Predictions are hypotheses to be
          checked against the spectra, not proof of a structure.</p>
@@ -122,6 +138,7 @@
   <script src="site.config.js"></script>
   <script src="examples.js"></script>
   <script src="chefnmr.js"></script>
+  <script src="cdxml.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

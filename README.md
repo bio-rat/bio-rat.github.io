@@ -13,8 +13,18 @@ Actions jobs (Team/Enterprise only), not for serving a site. So the page is stat
 ```
 browser ── https://bio-rat.github.io (docs/) ──► POST/GET  https://ziyux123-chefnmr2.hf.space/gradio_api/call/elucidate_structure
                                                  ◄ ranked candidate SMILES (JSON)
-        draws the structures locally with RDKit.js
+        draws 2D structures with RDKit.js; builds ChemDraw/SDF files and the 3D view with OpenChemLib + 3Dmol.js
 ```
+
+### Downloads and the 3D view
+
+- **ChemDraw (.cdxml)** for one candidate or all of them on one page (with rank, sampling frequency and sample count under each), and an **SDF**
+  with the same data. The CDXML is written by `docs/cdxml.js`; `tests/test_cdxml_roundtrip.py` reads 20 test structures (charges,
+  heteroatoms, aromatic rings, the five example molecules) back through RDKit's CDXML reader and checks they are identical. That is
+  not the same as opening the file in the ChemDraw application, which has not been tried: if ChemDraw ever objects, use the SDF.
+- **3D view** (per candidate): drag to rotate, scroll to zoom, plus spin, style and new-conformer controls. **The API returns no 3D
+  coordinates** (only SMILES, votes and counts), so the model is generated in the browser from the planar SMILES with OpenChemLib's
+  conformer generator. Conformation and stereochemistry in it are arbitrary and are not the model's own sampled coordinates.
 
 The Space allows cross-origin calls from any site (checked with a preflight from a `github.io` origin).
 
@@ -41,10 +51,14 @@ The Space allows cross-origin calls from any site (checked with a preflight from
 docs/                    the GitHub Pages site (no build step)
   index.html style.css app.js   page, styling, UI logic
   chefnmr.js                    Space client (Gradio HTTP API), no DOM, unit-tested
+  cdxml.js                      ChemDraw (.cdxml) and SDF writers, no DOM, round-trip tested
   site.config.js                ← the file you edit: your name, tagline, links
   examples.js                   one-click example molecules (with reported structures)
-  vendor/rdkit/                 RDKit.js (BSD-3) for drawing structures in the browser
+  vendor/rdkit/                 RDKit.js (BSD-3): 2D drawings and the reported-structure match
+  vendor/openchemlib/           OpenChemLib (BSD-3): 2D layout for ChemDraw files, 3D conformers (loaded on first use)
+  vendor/3dmol/                 3Dmol.js (BSD-3): the interactive 3D viewer (loaded on first use)
 tests/test_client.cjs           Node tests of docs/chefnmr.js (add --live for one real call to the Space)
+tests/test_cdxml_roundtrip.py   writes CDXML with docs/cdxml.js and reads it back with RDKit (needs RDKit 2023.09+ and node)
 ```
 
 ## Publish
@@ -59,6 +73,7 @@ tests/test_client.cjs           Node tests of docs/chefnmr.js (add --live for on
 ```bash
 node tests/test_client.cjs           # client logic with a mocked network
 node tests/test_client.cjs --live    # + one real call to the Space (skipped if its quota is used up)
+python tests/test_cdxml_roundtrip.py # ChemDraw writer: round trip through RDKit's CDXML reader
 ```
 
 This folder has no licence file; add one (e.g. MIT) if you want others to reuse the page.
