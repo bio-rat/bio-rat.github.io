@@ -133,23 +133,12 @@
       `${n} samples · ${valid} gave a structure · ${cands.length} candidate${cands.length === 1 ? "" : "s"}` +
       (t != null ? ` · ${t} s on the GPU` : "") + ` · ${via}`;
 
+    // Only the "nothing came out" case gets a message; a prior run's message must not linger.
     const hint = $("hint");
-    if (cands.length) {
-      const top = cands[0].vote_fraction;
-      // Guideline from the ChefNMR2 authors' own web app / MCP tool description.
-      if (top >= 0.97 && valid >= 0.1 * n) {
-        hint.textContent = "The samples agree on one structure (top sampling frequency ≥ 97%).";
-        hint.className = "hint good";
-      } else {
-        hint.textContent = `The samples do not agree on one structure (top sampling frequency ${(top * 100).toFixed(1)}%). ` +
-          "The authors' guideline is to draw more samples (1000) before trusting the top structure.";
-        hint.className = "hint warn";
-      }
-      hint.hidden = false;
-    } else {
-      hint.textContent = "No sample gave a valid structure. Check the formula and peak lists, or try more samples.";
+    hint.hidden = cands.length > 0;
+    if (!cands.length) {
+      hint.textContent = "No sample gave a valid structure. Check the formula and peak lists.";
       hint.className = "hint warn";
-      hint.hidden = false;
     }
 
     let RDKit = null;
@@ -208,7 +197,7 @@
     running = true;
     $("run").disabled = true;
     const t0 = Date.now();
-    const tick = () => setStatus(`Waiting for a GPU slot on the public Space (usually under 15 s) — ${Math.round((Date.now() - t0) / 1000)} s`);
+    const tick = () => setStatus(`Running on the public Space's GPU (1000 samples can take up to a minute) — ${Math.round((Date.now() - t0) / 1000)} s`);
     tick(); ticker = setInterval(tick, 1000);
     loadRDKit().catch(() => {}); // fetch the drawing library while the GPU works
 

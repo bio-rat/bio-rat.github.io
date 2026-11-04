@@ -29,7 +29,9 @@ The Space allows cross-origin calls from any site (checked with a preflight from
   fallback (not included here).
 - **Privacy.** Input goes to Hugging Face. The page says so; don't submit unpublished or confidential spectra.
 - Predictions are hypotheses: check the proposed structure against the spectra. The *sampling frequency* is the model's
-  confidence; the authors suggest drawing 1000 samples when the top structure is below 97%.
+  confidence. The page defaults to 1000 samples, the count the authors suggest when the top structure is below 97%; a
+  1000-sample run uses much more of the Space's per-visitor GPU allowance than a 100-sample run (the Space's own code reserves
+  about 98 s of it versus about 39 s), so anonymous visitors may get only a run or two a day.
 - ChefNMR2's checkpoints are CDLA-Sharing-1.0 and were trained on data that include CC BY-NC 4.0 sources: check those
   terms before any commercial use. See `THIRD_PARTY.md`.
 
