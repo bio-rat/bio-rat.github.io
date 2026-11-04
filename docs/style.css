@@ -123,3 +123,9 @@ button.busy .spin { display: inline-block; }
 .viewer-bar select { width: auto; padding: .15rem .4rem; font-size: .85rem; }
 .viewer { position: relative; width: 100%; height: 340px; background: #fff; border-radius: 8px; border: 1px solid var(--line); overflow: hidden; touch-action: none; }
 .viewer-note { color: var(--muted); font-size: .8rem; margin: .5rem 0 0; }
+
+/* ---- optional token box ---- */
+.token-box { margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px; padding: .5rem .8rem; color: var(--fg); font-size: .9rem; }
+.token-box summary { cursor: pointer; color: var(--muted); }
+.token-box[open] summary { color: var(--fg); margin-bottom: .4rem; }
+.token-box p { margin: .2rem 0 .4rem; color: var(--muted); font-size: .85rem; }

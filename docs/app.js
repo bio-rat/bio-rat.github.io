@@ -22,9 +22,15 @@
 
   // ---- where the data goes -----------------------------------------------------------------------------
   const hostOf = (u) => { try { return new URL(u).host; } catch (_) { return u; } };
-  $("privacy").textContent =
-    `Your input is sent to ${hostOf(SITE.spaceUrl)} (the ChefNMR2 authors' public Space on Hugging Face) to run the model. ` +
-    "This page itself stores nothing. Don't submit unpublished or confidential spectra.";
+  function updatePrivacy() {
+    const withToken = $("hf-token").value.trim() !== "";
+    $("privacy").textContent =
+      `Your input is sent to ${hostOf(SITE.spaceUrl)} (the ChefNMR2 authors' public Space on Hugging Face) to run the model. ` +
+      "This page itself stores nothing. Don't submit unpublished or confidential spectra." +
+      (withToken ? " Your token is sent only to that Space and is kept in this tab's memory only." : "");
+  }
+  $("hf-token").addEventListener("input", updatePrivacy);
+  updatePrivacy();
 
   // ---- examples ----------------------------------------------------------------------------------------
   const sel = $("example");
@@ -377,20 +383,24 @@
       });
     } catch (e) { setStatus(e.message, "error"); return; }
 
-    const via = "public ChefNMR2 Space";
+    let token = "";
+    try { token = window.ChefNMR.checkToken($("hf-token").value); } catch (e) { setStatus(e.message, "error"); return; }
+    const via = token ? "public ChefNMR2 Space (signed in)" : "public ChefNMR2 Space";
     running = true;
     setRunning(true, input);
     loadRDKit().catch(() => {}); // fetch the drawing library while the GPU works
 
     try {
-      const answer = await window.ChefNMR.runSpace(SITE.spaceUrl, input);
+      const answer = await window.ChefNMR.runSpace(SITE.spaceUrl, input, { token });
       if (!answer || !Array.isArray(answer.candidates)) throw new Error("The Space returned an unexpected answer.");
       await render(answer, input, via, reportedFor(input));
     } catch (e) {
       let msg = e && e.message ? e.message : String(e);
       if (e && (e.name === "AbortError" || /timeout/i.test(msg))) msg = "The request timed out. Try fewer samples or try again in a minute.";
       else if (/failed to fetch|networkerror|load failed/i.test(msg)) msg = "Could not reach the public Space (it may be restarting or you may be offline). Try again in a minute.";
-      else if (/runs limit|quota|zerogpu/i.test(msg)) msg = "The public Space's free GPU allowance for your network is used up for now (it is per visitor and resets daily; anonymous visitors get only a few runs, and a 1000-sample run uses most of one). Try fewer samples or try again later.";
+      else if (/runs limit|quota|zerogpu/i.test(msg)) msg = token
+        ? "Your Hugging Face account's daily GPU allowance on the Space is used up for now (free accounts get about 5 minutes a day, PRO about 40; it resets 24 hours after your first run). Try fewer samples or try again later."
+        : "The public Space's free GPU allowance for your network is used up for now (anonymous visitors get about 2 minutes a day). Open \u201cNeed more GPU quota?\u201d and paste a Hugging Face token to use your own allowance, use fewer samples, or try again later.";
       setStatus(msg, "error");
       $("placeholder").hidden = false;
     } finally {

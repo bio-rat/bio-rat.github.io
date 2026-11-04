@@ -43,6 +43,24 @@
     return events;
   }
 
+  /** An optional Hugging Face token: "" when empty, trimmed when valid, otherwise an error (tokens start with hf_). */
+  function checkToken(raw) {
+    const t = (raw || "").trim();
+    if (!t) return "";
+    if (!/^hf_[A-Za-z0-9]{10,}$/.test(t)) throw new Error("That doesn't look like a Hugging Face token (they start with hf_ and have no spaces).");
+    return t;
+  }
+
+  /** Request headers; a token is only ever attached when the host is a hf.space Space. */
+  function headersFor(base, token, extra) {
+    const h = Object.assign({}, extra);
+    if (token) {
+      if (!/\.hf\.space$/i.test(new URL(base).hostname)) throw new Error("Refusing to send a token to a host that is not a hf.space Space.");
+      h.authorization = `Bearer ${token}`;
+    }
+    return h;
+  }
+
   /** Gradio 6 sends errors as {"error": "...", "title": "..."}; older versions send a bare string. */
   function gradioErrorMessage(raw) {
     let m = raw;
@@ -76,7 +94,7 @@
     try {
       const post = await fetch(`${base}/gradio_api/call/elucidate_structure`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: headersFor(base, opts.token, { "content-type": "application/json" }),
         body: JSON.stringify({ data: [input.formula, input.c13, input.h1, input.n_samples, input.seed] }),
         signal: t.signal,
       });
@@ -84,7 +102,7 @@
       const { event_id } = await post.json();
       if (!event_id) throw new Error("The Space did not return an event id.");
       // The stream stays open until the GPU slot has run (ZeroGPU may queue first), then closes.
-      const res = await fetch(`${base}/gradio_api/call/elucidate_structure/${encodeURIComponent(event_id)}`, { signal: t.signal });
+      const res = await fetch(`${base}/gradio_api/call/elucidate_structure/${encodeURIComponent(event_id)}`, { headers: headersFor(base, opts.token, {}), signal: t.signal });
       if (!res.ok) throw new Error(await readError(res));
       const events = parseSSE(await res.text());
       const err = events.find((e) => e.event === "error");
@@ -98,7 +116,7 @@
     }
   }
 
-  const api = { preflight, parseSSE, gradioErrorMessage, runSpace };
+  const api = { preflight, checkToken, parseSSE, gradioErrorMessage, runSpace };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.ChefNMR = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BIO-RAT — portfolio</title>
   <meta name="description" content="Tools and experiments in computational biology, with a live ChefNMR2 NMR structure-elucidation demo.">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <header class="site-header">
@@ -71,9 +71,9 @@
               <label for="n">Samples</label>
               <select id="n">
                 <option value="20">20 (quick look)</option>
-                <option value="100">100 (quicker)</option>
+                <option value="100" selected>100 (default)</option>
                 <option value="300">300</option>
-                <option value="1000" selected>1000 (default)</option>
+                <option value="1000">1000 (most reliable, uses the most GPU quota)</option>
               </select>
             </div>
             <div>
@@ -81,6 +81,16 @@
               <input id="seed" type="number" min="0" step="1" value="0">
             </div>
           </div>
+
+          <details class="token-box">
+            <summary>Need more GPU quota? Use your Hugging Face account</summary>
+            <p>The public Space gives anonymous visitors about 2 minutes of GPU a day, a free account about 5 and PRO about 40.
+               Paste a <a href="https://huggingface.co/settings/tokens" rel="noopener">read-only access token</a> to use your own
+               allowance. It stays in this tab's memory only (cleared when you reload), is never saved, and is sent only to the
+               Space.</p>
+            <label for="hf-token">Hugging Face token <small>optional</small></label>
+            <input id="hf-token" type="password" autocomplete="off" spellcheck="false" placeholder="hf_…">
+          </details>
 
           <div class="actions">
             <button type="submit" id="run" class="primary"><span class="spin" aria-hidden="true"></span><span id="run-label">Elucidate structure</span></button>
@@ -135,10 +145,10 @@
 
   <footer><span id="year"></span> · built with <a href="https://github.com/ml-struct-bio/chefnmr2" rel="noopener">ChefNMR2</a></footer>
 
-  <script src="site.config.js?v=4"></script>
-  <script src="examples.js?v=4"></script>
-  <script src="chefnmr.js?v=4"></script>
-  <script src="cdxml.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="site.config.js?v=5"></script>
+  <script src="examples.js?v=5"></script>
+  <script src="chefnmr.js?v=5"></script>
+  <script src="cdxml.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

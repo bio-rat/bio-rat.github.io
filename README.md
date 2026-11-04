@@ -30,18 +30,23 @@ The Space allows cross-origin calls from any site (checked with a preflight from
 
 ## Limits to know about
 
-- **Quota.** The Space runs on shared ZeroGPU, which gives each visitor a small daily GPU allowance. In testing from one
-  network, the 4th default (100-sample) run in a short period was refused with *"You have exceeded your ZeroGPU runs
-  limit. Authenticate with a Hugging Face token for more quota."* Anonymous visitors should expect only a few runs a day.
-  The page shows a plain message when this happens.
+- **Quota.** The Space runs on shared ZeroGPU, which gives each visitor a daily GPU allowance. Per the
+  [ZeroGPU docs](https://huggingface.co/docs/hub/spaces-zerogpu): anonymous 2 min, free account 5 min, PRO 40 min
+  (extendable with credits); it resets 24 hours after your first GPU use. In testing from one network, the 4th default
+  (100-sample) run in a short period was refused with *"You have exceeded your ZeroGPU runs limit. Authenticate with a
+  Hugging Face token for more quota."*
+- **Token field.** The page has an optional *Hugging Face token* box (under the form). A token you paste is read at click time, kept in
+  memory only (gone when the tab reloads), never stored, never put in a URL, and sent only as an `Authorization` header to the
+  `*.hf.space` host (the code refuses any other host). Use a read-only token, and revoke any token you have pasted anywhere you
+  did not intend. `tests/test_client.cjs` checks these properties with a fake token.
 - **Dependence.** The Space belongs to the authors; if they change its API or take it down, the demo stops until
   `docs/chefnmr.js` is adjusted. The model weights (11.5 GB) and code are public, so a self-hosted GPU endpoint is the
   fallback (not included here).
 - **Privacy.** Input goes to Hugging Face. The page says so; don't submit unpublished or confidential spectra.
 - Predictions are hypotheses: check the proposed structure against the spectra. The *sampling frequency* is the model's
-  confidence. The page defaults to 1000 samples, the count the authors suggest when the top structure is below 97%; a
-  1000-sample run uses much more of the Space's per-visitor GPU allowance than a 100-sample run (the Space's own code reserves
-  about 98 s of it versus about 39 s), so anonymous visitors may get only a run or two a day.
+  confidence. The page defaults to 100 samples. The authors suggest 1000 when the top structure is below 97%, but a 1000-sample
+  run uses much more of the per-visitor GPU allowance (the Space's own code reserves about 98 s versus about 39 s), so it is
+  one click away rather than the default.
 - ChefNMR2's checkpoints are CDLA-Sharing-1.0 and were trained on data that include CC BY-NC 4.0 sources: check those
   terms before any commercial use. See `THIRD_PARTY.md`.
 

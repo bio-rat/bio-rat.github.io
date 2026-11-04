@@ -86,6 +86,44 @@ function mockFetch(routes) {
     ]);
     await assert.rejects(() => C.runSpace("https://space.example", C.preflight(good)), /without an answer/);
   });
+  const FAKE = "hf_" + "A".repeat(34); // obviously fake; never a real token
+  await t("checkToken: empty is allowed, hf_ tokens pass, junk is rejected", () => {
+    assert.strictEqual(C.checkToken(""), "");
+    assert.strictEqual(C.checkToken("   "), "");
+    assert.strictEqual(C.checkToken(`  ${FAKE}  `), FAKE);
+    for (const bad of ["abc", "hf_", "hf_short", "hf_ spaced token", `Bearer ${FAKE}`, "sk-" + "A".repeat(40)]) {
+      assert.throws(() => C.checkToken(bad), /Hugging Face token/);
+    }
+  });
+  await t("runSpace with a token sends Authorization on both requests; without one it sends none", async () => {
+    const routes = () => [
+      { match: "/gradio_api/call/elucidate_structure/EID", text: "event: complete\ndata: " + JSON.stringify([JSON.stringify(answer)]) + "\n\n" },
+      { match: "/gradio_api/call/elucidate_structure", method: "POST", json: { event_id: "EID" } },
+    ];
+    let calls = mockFetch(routes());
+    await C.runSpace("https://space.hf.space", C.preflight(good), { token: FAKE });
+    assert.strictEqual(calls.length, 2);
+    for (const c of calls) assert.strictEqual(c.init.headers.authorization, `Bearer ${FAKE}`);
+    assert.ok(!calls.some((c) => String(c.url).includes(FAKE)), "token must never be in a URL");
+    assert.ok(!calls.some((c) => String(c.init.body || "").includes(FAKE)), "token must never be in a body");
+    calls = mockFetch(routes());
+    await C.runSpace("https://space.hf.space", C.preflight(good));
+    for (const c of calls) assert.ok(!("authorization" in (c.init.headers || {})), "no token, no Authorization header");
+  });
+  await t("runSpace refuses to send a token to a non-hf.space host, and errors never echo the token", async () => {
+    const calls = mockFetch([]);
+    await assert.rejects(() => C.runSpace("https://evil.example.com", C.preflight(good), { token: FAKE }),
+      (e) => /not a hf\.space/.test(e.message) && !e.message.includes(FAKE));
+    assert.strictEqual(calls.length, 0, "nothing may be sent");
+    await assert.rejects(() => C.runSpace("https://hf.space.evil.example", C.preflight(good), { token: FAKE }), /not a hf\.space/);
+    mockFetch([
+      { match: "/gradio_api/call/elucidate_structure/EID", text: 'event: error\ndata: {"error":"Invalid credentials"}\n\n' },
+      { match: "/gradio_api/call/elucidate_structure", method: "POST", json: { event_id: "EID" } },
+    ]);
+    await assert.rejects(() => C.runSpace("https://space.hf.space", C.preflight(good), { token: FAKE }),
+      (e) => /Invalid credentials/.test(e.message) && !e.message.includes(FAKE));
+  });
+
   if (process.argv.includes("--live")) {
     global.fetch = realFetch; // Node's real fetch, not the mock
     await t("LIVE: public Space returns morphine as the top structure", async () => {
