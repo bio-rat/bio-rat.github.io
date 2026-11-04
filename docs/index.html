@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BIO-RAT — portfolio</title>
+  <meta name="description" content="Tools and experiments in computational biology, with a live ChefNMR2 NMR structure-elucidation demo.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#top" id="brand">BIO-RAT</a>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="#demo">ChefNMR2 demo</a>
+      <a href="#about" id="nav-github">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <h1 id="hero-name">BIO-RAT</h1>
+      <p class="tagline" id="hero-tagline"></p>
+      <p class="intro" id="hero-intro"></p>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="cards">
+        <a class="card" href="#demo">
+          <span class="badge">Live demo</span>
+          <h3>ChefNMR2 interface</h3>
+          <p>Paste a molecular formula and ¹H / ¹³C NMR peak lists; a generative model proposes ranked candidate structures.
+             It runs on the model authors' public GPU Space.</p>
+        </a>
+        <div class="card muted">
+          <span class="badge">Next</span>
+          <h3>More to come</h3>
+          <p>Add a project card by copying one in <code>docs/index.html</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo">
+      <h2>ChefNMR2 — structure from NMR peaks</h2>
+      <p class="lede">
+        <a href="https://github.com/ml-struct-bio/chefnmr2" rel="noopener">ChefNMR2</a> (Xiong et al., 2026,
+        <a href="https://doi.org/10.64898/2026.10.29.762711" rel="noopener">bioRxiv</a>) elucidates the planar structure of a small
+        molecule from its ¹H and ¹³C peak lists and molecular formula. It draws many samples and ranks the structures by how often
+        they occur; that <em>sampling frequency</em> is the model's confidence.
+      </p>
+
+      <div class="demo">
+        <form id="form" autocomplete="off" novalidate>
+          <div class="row">
+            <label for="example">Example</label>
+            <select id="example"></select>
+          </div>
+
+          <label for="formula">Molecular formula <small>with hydrogens, e.g. C17H19NO3</small></label>
+          <input id="formula" type="text" spellcheck="false" required>
+
+          <label for="c13">¹³C shifts (ppm) <small>commas, spaces or new lines</small></label>
+          <textarea id="c13" rows="3" spellcheck="false"></textarea>
+
+          <label for="h1">¹H peaks <small>one per line: shift, nH, multiplicity (s d t q p h hept m, or dd, dt, …)</small></label>
+          <textarea id="h1" rows="8" spellcheck="false"></textarea>
+
+          <div class="row two">
+            <div>
+              <label for="n">Samples</label>
+              <select id="n">
+                <option value="20">20 (quick look)</option>
+                <option value="100" selected>100 (default)</option>
+                <option value="300">300</option>
+                <option value="1000">1000 (most reliable, slower)</option>
+              </select>
+            </div>
+            <div>
+              <label for="seed">Seed</label>
+              <input id="seed" type="number" min="0" step="1" value="0">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="run" class="primary">Elucidate structure</button>
+          </div>
+          <p class="privacy" id="privacy"></p>
+        </form>
+
+        <div class="out" aria-live="polite">
+          <div id="status" class="status" hidden></div>
+          <div id="results" hidden>
+            <div id="summary" class="summary"></div>
+            <div id="hint" class="hint" hidden></div>
+            <ol id="cands" class="cands"></ol>
+            <details id="implausible-box" hidden>
+              <summary>Candidates set aside as chemically implausible</summary>
+              <ul id="implausible"></ul>
+            </details>
+            <p class="tools"><button type="button" id="dl" class="ghost">Download answer (JSON)</button></p>
+          </div>
+          <div id="placeholder" class="placeholder">Candidate structures appear here.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2>About this page</h2>
+      <p>A static page served by GitHub Pages. GitHub Pages cannot run a model or use a GPU, so the demo sends your input to
+         the ChefNMR2 authors' public GPU Space and draws the answer in your browser (structures are drawn locally with
+         <a href="https://github.com/rdkit/rdkit-js" rel="noopener">RDKit.js</a>).</p>
+      <p>ChefNMR2 code is MIT-licensed; its checkpoints are under CDLA-Sharing-1.0 and were trained on data that include
+         NPAtlas and NP-MRD (CC BY-NC 4.0), so check those terms before any commercial use. Predictions are hypotheses to be
+         checked against the spectra, not proof of a structure.</p>
+      <p><a id="about-github" href="#" rel="noopener">GitHub</a></p>
+    </section>
+  </main>
+
+  <footer><span id="year"></span> · built with <a href="https://github.com/ml-struct-bio/chefnmr2" rel="noopener">ChefNMR2</a></footer>
+
+  <script src="site.config.js"></script>
+  <script src="examples.js"></script>
+  <script src="chefnmr.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
