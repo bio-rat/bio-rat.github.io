@@ -331,6 +331,7 @@
       [["bs", "Ball and stick"], ["stick", "Sticks"], ["sphere", "Space-filling"]].forEach(([v, t]) => {
         const o = el("option", "", t); o.value = v; style.appendChild(o);
       });
+      style.value = "stick"; // default display style
       const spin = el("button", "ghost small", "Spin"); spin.type = "button";
       const fresh = el("button", "ghost small", "New conformer"); fresh.type = "button";
       const reset = el("button", "ghost small", "Reset view"); reset.type = "button";
