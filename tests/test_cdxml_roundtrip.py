@@ -63,14 +63,42 @@ def roundtrip(items):
     with tempfile.TemporaryDirectory() as d:
         src, out = Path(d, "s.json"), Path(d, "o.cdxml")
         src.write_text(json.dumps(list(structs)))
-        subprocess.run(["node", str(ROOT / "tests" / "cdxml_cli.cjs"), str(src), str(out)], check=True)
+        subprocess.run(["node", str(ROOT / "tests" / "cdxml_cli.cjs"), "cdxml", str(src), str(out)], check=True)
         text = out.read_text()
     mols = Chem.MolsFromCDXML(text)
     return text, [Chem.MolToSmiles(m) for m in mols], list(expected)
 
 
+def sdf_roundtrip():
+    """docs/cdxml.js toSDF: molfiles (including one with an all-blank 3-line header) plus data fields must read back
+    through RDKit's SD reader with structures and fields intact."""
+    import io
+
+    items = list(SMILES.items())[:6]
+    records = []
+    for i, (name, smi) in enumerate(items):
+        mol = Chem.MolFromSmiles(smi)
+        rdDepictor.Compute2DCoords(mol)
+        block = Chem.MolToMolBlock(mol)
+        if i == 0:  # a header a global newline collapse would corrupt
+            block = "\n\n\n" + block.split("\n", 3)[3]
+        records.append({"molfile": block, "fields": {"rank": i + 1, "smiles": smi, "note": "two\nlines"}})
+    with tempfile.TemporaryDirectory() as d:
+        src, out = Path(d, "r.json"), Path(d, "o.sdf")
+        src.write_text(json.dumps(records))
+        subprocess.run(["node", str(ROOT / "tests" / "cdxml_cli.cjs"), "sdf", str(src), str(out)], check=True)
+        text = out.read_text()
+    got = list(Chem.ForwardSDMolSupplier(io.BytesIO(text.encode())))
+    ok = len(got) == len(items) and all(m is not None for m in got)
+    ok = ok and all(Chem.MolToSmiles(m) == Chem.MolToSmiles(Chem.MolFromSmiles(smi)) for m, (_, smi) in zip(got, items))
+    ok = ok and [m.GetProp("rank") for m in got] == [str(i + 1) for i in range(len(items))]
+    ok = ok and all(m.GetProp("note") == "two lines" for m in got) and text.count("$$$$") == len(items)
+    print(("ok   " if ok else "FAIL ") + f"SDF: {len(got)} records read back by RDKit, structures and data fields intact")
+    return 0 if ok else 1
+
+
 def main():
-    failures = 0
+    failures = sdf_roundtrip()
     # 1) each structure alone
     for name, smi in SMILES.items():
         _, got, exp = roundtrip([(name, smi)])

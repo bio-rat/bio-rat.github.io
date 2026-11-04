@@ -133,15 +133,15 @@
     );
   }
 
-  /** SDF text from [{molfile, fields:{name: value}}] (molfiles as produced by any toolkit). */
+  /** SDF text from [{molfile, fields:{name: value}}] (molfiles from any toolkit; the title line may be blank). */
   function toSDF(records) {
     return records
       .map((r) => {
-        const mol = r.molfile.replace(/\s+$/, "");
+        const mol = r.molfile.replace(/\s+$/, ""); // ends with "M  END"; leading blank title lines are kept
         const fields = Object.entries(r.fields || {})
-          .map(([k, v]) => `> <${k}>\n${String(v).replace(/\r?\n/g, " ")}\n`)
-          .join("\n");
-        return `${mol}\n${fields ? "\n" + fields : ""}\n$$$$\n`.replace(/\n\n\n/g, "\n\n");
+          .map(([k, v]) => `> <${k}>\n${String(v).replace(/\r?\n/g, " ")}\n\n`)
+          .join("");
+        return `${mol}\n${fields}$$$$\n`;
       })
       .join("");
   }
